@@ -13,9 +13,9 @@ closed, PAM skips fingerprint and goes straight to the password prompt — insta
 no waiting, no `Ctrl-C`. When the lid is open, fingerprint works exactly as before.
 It reuses your existing fprintd-enrolled fingerprints and installs no daemon.
 
-> **Full walkthrough:** a longer write-up is planned for
-> [noratek.dev](https://noratek.dev/). This README is the condensed, copy-paste
-> version.
+> **Full walkthrough:** a step-by-step write-up is published on
+> [noratek.dev](https://noratek.dev/howto/fprintd-skip-when-lid-closed-fedora).
+> This README is the condensed, copy-paste version.
 
 ---
 
