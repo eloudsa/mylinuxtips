@@ -12,7 +12,7 @@ Some of these tips are written up in more depth on my blog,
 
 | Tip | What it does |
 | --- | --- |
-| [framework/ledmatrix](framework/ledmatrix/) | Drive both Framework Laptop 16 LED Matrix modules as a live system monitor (CPU, memory, temperature, fan) on Linux. |
+| [framework/ledmatrix](framework/ledmatrix/) | Drive both Framework Laptop 16 LED Matrix modules as a power-aware live system monitor (CPU, memory, temperature, fan; blanks on battery or closed lid) on Linux. |
 | [ssh/github-ssh-hangs-fedora-gnome](ssh/github-ssh-hangs-fedora-gnome/) | Fix `git push`/`ssh` hanging on Fedora/GNOME — replace the buggy `gcr-ssh-agent` with a plain OpenSSH agent, with optional zero-prompt passphrase from the keyring. |
 
 *More tips will be added over time.*
