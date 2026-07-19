@@ -14,10 +14,16 @@ correctness and safety matter more than cleverness.
 
 ## Non-negotiable rules
 
-- **This repository is public. Never commit secrets** — no API keys, passwords,
-  tokens, private URLs, real hostnames, MAC/serial numbers, or personal paths
-  that leak identity beyond what is already public. Before staging any change,
-  scan the diff for accidental secrets.
+- **This repository is public — no secrets, ever.** A push is effectively a
+  publish: scripts here are linked from noratek.dev, so treat every committed
+  change as immediately public. Before writing or staging anything, scan the
+  content and the diff for values that must not ship:
+  - passwords, passphrases, API keys, tokens, bearer/auth headers, private keys
+  - private IP addresses, internal hostnames, real serial numbers, MAC addresses
+  - personal paths or anything identifying beyond the author's public identity
+
+  Replace them with placeholders (`<token>`, `<hostname>`, `xxxx`). If you are
+  unsure whether a value is sensitive, treat it as sensitive and ask.
 - **No AI attribution in git history.** Do **not** add `Co-Authored-By: Claude`
   or any "Generated with Claude" line to commits or pull requests.
 - **Communicate in English.** Code, comments in new material, commit messages,
@@ -69,7 +75,12 @@ restrictive headers).
 
 ## Claude memory
 
-This project's Claude memory is synchronised with a copy kept on Dropbox at
-`~/Dropbox/AI`. Treat that Dropbox copy as the durable backup of the memory
-files — the working memory lives under Claude's per-project directory, and the
-two are kept in sync so the notes survive across machines and reinstalls.
+Claude Code's per-project memories live in
+`~/.claude/projects/-home-eloudsa-Projects-mylinuxtips/memory/` (indexed by
+`MEMORY.md`), and are mirrored to **`~/Dropbox/AI/Memories/mylinuxtips/`** so they
+can move between laptops (convention: one folder per project under
+`~/Dropbox/AI/Memories/<project-name>/`).
+
+This is a manual snapshot, not live sync. To restore on another machine, copy the
+files back into that machine's project memory dir; re-copy to Dropbox after
+memories change.
