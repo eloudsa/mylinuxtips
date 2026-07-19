@@ -1,0 +1,115 @@
+# LED Matrix system monitor — configuration
+#
+# Install to: ~/.config/ledmatrix-sysmon/config.toml
+# ($XDG_CONFIG_HOME/ledmatrix-sysmon/config.toml when that variable is set)
+#
+# Re-read automatically whenever this file changes — no restart needed.
+#
+# Every setting is optional. A missing file, an unparseable file, or any
+# individual setting that is misspelled, mistyped, out of range or inconsistent
+# falls back to its default. The monitor never refuses to start.
+#
+# Validate with:  ledmatrix-config-check
+
+
+[display]
+
+# Master switch. false blanks both matrices and keeps the service running,
+# so it can be flipped back on without restarting anything.
+enabled = true
+
+# "gauge" — vertical bars, 34 levels, two side by side per matrix
+# "value" — metric name above its current figure, two blocks stacked per matrix
+mode = "gauge"
+
+# Seconds between refreshes. Longer intervals let the CPU stay in deeper
+# idle states; 5 s is plenty in value mode.
+interval = 1.0
+
+# Draw the metric name vertically above each bar in gauge mode. Costs 17 rows
+# of bar height, leaving 16 levels instead of 34.
+gauge_labels = false
+
+# Bars grow upward from the bottom. Set false if yours appear inverted.
+fill_from_bottom = true
+
+
+[power]
+
+# "always"  — run regardless of the power source
+# "ac_only" — blank the matrices whenever the machine is on battery
+policy = "always"
+
+# Blank the matrices below this battery percentage. 0 disables the check.
+battery_off_below = 0
+
+# true  — light back up once the threshold is cleared or the charger is plugged in
+# false — once the threshold fires, stay dark until the service restarts
+resume_on_charge = true
+
+
+[layout]
+
+# Which metric goes where. Valid values: cpu, mem, temp, fan, none.
+# No metric may occupy two slots; if one does, the whole arrangement reverts
+# to the default. Use "none" to leave a position dark.
+#
+#          gauge mode                value mode
+#  slot1   left matrix, left bar     left matrix, top block
+#  slot2   left matrix, right bar    left matrix, bottom block
+#  slot3   right matrix, left bar    right matrix, top block
+#  slot4   right matrix, right bar   right matrix, bottom block
+
+slot1 = "cpu"
+slot2 = "mem"
+slot3 = "temp"
+slot4 = "fan"
+
+
+[scale]
+
+# Temperature range mapped onto the gauge, in degrees Celsius.
+temp_min = 35.0
+temp_max = 95.0
+
+# Above this, the temperature reading switches to full brightness.
+# Must lie between temp_min and temp_max.
+temp_danger = 85.0
+
+# RPM treated as 100 %. Calibrate per unit:
+#   sudo framework_tool --fansetduty 100
+#   sleep 5 && sudo framework_tool --thermal
+#   sudo framework_tool --autofanctrl
+fan_max_rpm = 5300.0
+
+# Percentages above which CPU and memory switch to full brightness.
+cpu_danger = 90.0
+mem_danger = 90.0
+
+# "util" — percent busy, from /proc/stat
+# "psi"  — pressure stall information, from /proc/pressure/cpu
+cpu_source = "util"
+
+# "used" — percent of RAM in use
+# "psi"  — memory pressure
+mem_source = "used"
+
+# Pressure above which a PSI-sourced gauge switches to full brightness.
+psi_danger = 60.0
+
+# hwmon device to read CPU temperature from. Falls back to the highest
+# temperature found anywhere. Check available names with --list-sensors.
+preferred_temp_hwmon = "k10temp"
+
+
+[brightness]
+
+# 0-255. Defaults keep the display readable without being distracting
+# in a dark room.
+base = 18        # body of a bar
+tip = 130        # top LED of a bar
+danger = 255     # any metric past its threshold
+baseline = 9     # bottom row, so an idle bar never looks dead
+divider = 4      # centre column between two gauges
+label = 32       # metric names
+value = 110      # numeric readings in value mode

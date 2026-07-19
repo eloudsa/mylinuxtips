@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#
+# ledmatrix-config-check — Validate the LED Matrix system monitor configuration.
+#
+# A thin wrapper around `ledmatrix-sysmon.py --check-config`. The validation
+# logic deliberately lives in the monitor itself: two implementations would
+# drift apart the first time a setting is added.
+#
+# Exit status:
+#   0  configuration is clean (or absent, which is valid — defaults apply)
+#   1  at least one problem found; each falls back to its default
+#   2  the monitor script could not be located
+#
+# Usage:
+#   ledmatrix-config-check [path/to/config.toml]
+
+set -u
+
+for candidate in \
+    "$(dirname "$(readlink -f "$0")")/ledmatrix-sysmon.py" \
+    "$HOME/.local/bin/ledmatrix-sysmon.py" \
+    "/usr/local/bin/ledmatrix-sysmon.py"
+do
+    if [ -r "$candidate" ]; then
+        MONITOR="$candidate"
+        break
+    fi
+done
+
+if [ -z "${MONITOR:-}" ]; then
+    echo "Cannot find ledmatrix-sysmon.py next to this script, in ~/.local/bin," >&2
+    echo "or in /usr/local/bin." >&2
+    exit 2
+fi
+
+for candidate in \
+    "$HOME/.local/share/ledmatrix-venv/bin/python" \
+    "$(command -v python3)"
+do
+    if [ -x "$candidate" ]; then
+        PYTHON="$candidate"
+        break
+    fi
+done
+
+if [ -z "${PYTHON:-}" ]; then
+    echo "No usable Python interpreter found." >&2
+    exit 2
+fi
+
+if [ "$#" -gt 0 ]; then
+    exec "$PYTHON" "$MONITOR" --check-config --config "$1"
+fi
+
+exec "$PYTHON" "$MONITOR" --check-config
