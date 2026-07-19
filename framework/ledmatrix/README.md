@@ -94,6 +94,7 @@ fill_from_bottom = true # flip if your bars grow the wrong way
 policy = "always"       # "always" or "ac_only"
 battery_off_below = 0   # blank below this charge percentage; 0 disables
 resume_on_charge = true # false latches the display off until restart
+lid_closed_off = true   # stop driving the matrices while the lid is shut
 
 [layout]
 slot1 = "cpu"           # cpu, mem, temp, fan, or none
@@ -136,6 +137,23 @@ ports. The modules then fall asleep on their own after 60 s, which is exactly th
 want for saving power.
 
 If no mains supply can be found at all, `ac_only` errs on the side of keeping the display lit.
+
+### Closed lid
+
+`lid_closed_off = true` (the default) stops driving the matrices while the lid is shut, based on
+`/proc/acpi/button/lid/*/state`.
+
+This is not cosmetic. The Framework 16 pulls the modules' `SLEEP#` pin low whenever the lid is
+closed, and the firmware treats that as a standing instruction: while the pin is asserted the
+module sleeps and the LED controller is powered down, whatever the host sends. But any command
+still wakes the device — so a monitor pushing a frame every second wakes the LED controller
+continuously, only for it to sleep again, and you never see any of it because the display is
+behind a closed lid.
+
+In clamshell mode with an external display, this is pure waste. Set it to `false` only if you have
+a reason to keep writing regardless.
+
+When the lid state cannot be determined, the display stays lit rather than blanking on a guess.
 
 ### Value mode has no decimals
 
@@ -200,6 +218,7 @@ ConditionPathExists=/dev/ledmatrix-left
 ExecStart=%h/.local/share/ledmatrix-venv/bin/python %h/.local/bin/ledmatrix-sysmon.py
 Restart=on-failure
 RestartSec=3
+TimeoutStopSec=5
 
 [Install]
 WantedBy=default.target
@@ -208,6 +227,10 @@ WantedBy=default.target
 `ConditionPathExists` matters: expansion modules can be pulled out at any time, and without it an
 enabled service fails and retries in a loop whenever a matrix is absent. With it, systemd skips
 the start cleanly.
+
+`TimeoutStopSec` is a safety net rather than a necessity. Serial writes are bounded by
+`write_timeout`, so the process always notices SIGTERM — but 5 s is a saner ceiling than the 45 s
+the user manager applies by default, should anything ever block unexpectedly.
 
 No command-line options belong in the unit — everything is in the configuration file, which can be
 changed while the service runs.
@@ -247,6 +270,9 @@ Measure it on your own machine with
 - Written and tested on Fedora 44, Framework Laptop 16 (Ryzen AI 9 HX 370 / Radeon 890M). Nothing
   is Fedora-specific beyond the package names.
 - Frames are staged column by column and committed atomically, so the display never tears.
+- Serial writes are bounded by `write_timeout` and their failures absorbed: a sleeping module
+  whose USB buffer has stopped draining would otherwise block the process indefinitely, leaving it
+  unable to notice SIGTERM. A dropped frame is harmless — the next one is one interval away.
 - The script resolves `/dev/ledmatrix-*` with `os.path.realpath()` before opening: pyserial only
   matches canonical device paths, and a symlink passed straight through is rejected.
 - `pyserial` is imported lazily, so `--check-config`, `--list-sensors` and `--preview` work on a

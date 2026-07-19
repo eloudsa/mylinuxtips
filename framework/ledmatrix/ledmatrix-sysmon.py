@@ -83,6 +83,7 @@ DEFAULTS = {
         "policy": "always",
         "battery_off_below": 0,
         "resume_on_charge": True,
+        "lid_closed_off": True,
     },
     "layout": {
         "slot1": "cpu",
@@ -180,6 +181,7 @@ VALIDATORS = {
     ("power", "policy"): lambda r, o, p: _check_choice(r, "power", "policy", {"always", "ac_only"}, o, p),
     ("power", "battery_off_below"): lambda r, o, p: _check_number(r, "power", "battery_off_below", 0, 100, o, p, integer=True),
     ("power", "resume_on_charge"): lambda r, o, p: _check_bool(r, "power", "resume_on_charge", o, p),
+    ("power", "lid_closed_off"): lambda r, o, p: _check_bool(r, "power", "lid_closed_off", o, p),
 
     ("scale", "temp_min"): lambda r, o, p: _check_number(r, "scale", "temp_min", -50, 150, o, p),
     ("scale", "temp_max"): lambda r, o, p: _check_number(r, "scale", "temp_max", -50, 150, o, p),
@@ -561,6 +563,23 @@ def battery_percent():
     return None
 
 
+def lid_closed():
+    """True when the lid is shut, False when open, None when undetermined.
+
+    Worth acting on: the Framework 16 pulls the modules' SLEEP# pin low while
+    the lid is closed, so the firmware blanks the LEDs regardless of what the
+    host sends. Frames pushed in that state only wake the LED controller for
+    nothing, and the display is behind a closed lid anyway.
+    """
+    for state in glob.glob("/proc/acpi/button/lid/*/state"):
+        text = _read_str(state).lower()
+        if "closed" in text:
+            return True
+        if "open" in text:
+            return False
+    return None
+
+
 class PowerGate:
     """Decides whether the display should be lit, given the power policy.
 
@@ -575,6 +594,9 @@ class PowerGate:
         power = cfg["power"]
 
         if not cfg["display"]["enabled"]:
+            return False
+
+        if power["lid_closed_off"] and lid_closed() is True:
             return False
 
         on_ac = ac_online()
@@ -747,7 +769,8 @@ def push_frame(ser, cols):
 
 
 def open_matrix(path):
-    return require_serial().Serial(os.path.realpath(path), BAUD, timeout=1)
+    return require_serial().Serial(os.path.realpath(path), BAUD,
+                                   timeout=1, write_timeout=1)
 
 
 def preview(left, right):
@@ -807,9 +830,12 @@ def report_config(cfg):
     gate = PowerGate()
     on_ac = ac_online()
     pct = battery_percent()
+    lid = lid_closed()
     ac_text = {True: "on AC", False: "on battery", None: "undetermined"}[on_ac]
+    lid_text = {True: "closed", False: "open", None: "undetermined"}[lid]
     print(f"Current power state: {ac_text}" +
-          (f", battery at {pct} %" if pct is not None else ""))
+          (f", battery at {pct} %" if pct is not None else "") +
+          f", lid {lid_text}")
     print("Display would currently be: " +
           ("lit" if gate.allows(cfg) else "dark"))
 
@@ -885,8 +911,11 @@ def main():
                 fl = fr = None
 
             if fl is not None:
-                push_frame(left, fl)
-                push_frame(right, fr)
+                try:
+                    push_frame(left, fl)
+                    push_frame(right, fr)
+                except (OSError, require_serial().SerialException):
+                    pass
 
             was_lit = lit
 

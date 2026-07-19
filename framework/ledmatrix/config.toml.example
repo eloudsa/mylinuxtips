@@ -47,6 +47,15 @@ battery_off_below = 0
 # false — once the threshold fires, stay dark until the service restarts
 resume_on_charge = true
 
+# Stop driving the matrices while the lid is shut.
+#
+# The Framework 16 pulls the modules' SLEEP# pin low whenever the lid is closed,
+# so the firmware blanks the LEDs whatever the host sends — but every frame
+# pushed still wakes the LED controller, only for it to sleep again. In
+# clamshell mode with an external display, that is pure waste behind a closed
+# lid. Set false only if you have a reason to keep writing regardless.
+lid_closed_off = true
+
 
 [layout]
 
