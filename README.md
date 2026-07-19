@@ -14,6 +14,7 @@ Some of these tips are written up in more depth on my blog,
 | --- | --- |
 | [framework/ledmatrix](framework/ledmatrix/) | Drive both Framework Laptop 16 LED Matrix modules as a power-aware live system monitor (CPU, memory, temperature, fan; blanks on battery or closed lid) on Linux. |
 | [ssh/github-ssh-hangs-fedora-gnome](ssh/github-ssh-hangs-fedora-gnome/) | Fix `git push`/`ssh` hanging on Fedora/GNOME — replace the buggy `gcr-ssh-agent` with a plain OpenSSH agent, with optional zero-prompt passphrase from the keyring. |
+| [fingerprint/fprintd-skip-when-lid-closed](fingerprint/fprintd-skip-when-lid-closed/) | Skip the fingerprint prompt for `sudo`/`su`/polkit/login when the laptop lid is closed (docked) and fall straight through to the password — a tiny lid check in front of `pam_fprintd`, no daemon. |
 
 *More tips will be added over time.*
 
