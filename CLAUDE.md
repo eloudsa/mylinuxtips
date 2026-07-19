@@ -66,3 +66,10 @@ When adding or editing a tip, match the style of the existing ones (see
 All material is shared for anyone to use, copy, modify and redistribute freely,
 with no warranty. Keep any new content consistent with that (don't introduce
 restrictive headers).
+
+## Claude memory
+
+This project's Claude memory is synchronised with a copy kept on Dropbox at
+`~/Dropbox/AI`. Treat that Dropbox copy as the durable backup of the memory
+files — the working memory lives under Claude's per-project directory, and the
+two are kept in sync so the notes survive across machines and reinstalls.
