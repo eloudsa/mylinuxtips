@@ -1,6 +1,9 @@
 # JetBrains IDE
 .idea/
 
+# Claude Code
+.claude/
+
 # Python
 __pycache__/
 *.pyc
