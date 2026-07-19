@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# SSH_ASKPASS helper: print the key passphrase to stdout by looking it up in the
+# GNOME login keyring (unlocked at login by PAM). ssh-add reads it from here, so
+# no passphrase prompt is ever shown.
+#
+# Store the passphrase once, interactively:
+#   secret-tool store --label="SSH passphrase id_github" ssh-key id_github
+#
+# Adjust the attribute (ssh-key id_github) to match your key name.
+exec secret-tool lookup ssh-key id_github

@@ -1,0 +1,14 @@
+[Unit]
+Description=Load SSH key into the agent from the GNOME keyring
+After=ssh-agent.service
+Requires=ssh-agent.service
+
+[Service]
+Type=oneshot
+Environment=SSH_AUTH_SOCK=%t/ssh-agent.socket
+Environment=SSH_ASKPASS=%h/.local/bin/ssh-askpass-keyring
+Environment=SSH_ASKPASS_REQUIRE=force
+ExecStart=/usr/bin/ssh-add %h/.ssh/id_github
+
+[Install]
+WantedBy=graphical-session.target
